@@ -72,176 +72,138 @@ class LicenseViewLauncher {
     }
 }
 function getWebviewContent() {
-    return `
-  <!DOCTYPE html>
-  <html lang="en">
-  <head>
-    <meta charset="UTF-8" />
-    <style>
-      :root {
-        color-scheme: light dark;
-      }
-      * {
-        margin: 0;
-        padding: 0;
-        box-sizing: border-box;
-        font-family: var(--vscode-font-family, sans-serif);
-      }
-      body {
-        padding: 8px;
-        background-color: var(--vscode-editor-background);
-        color: var(--vscode-editor-foreground);
-        font-size: 12px;
-      }
-      .scroll-pane {
-        max-height: 90vh;
-        overflow-y: auto;
-        display: flex;
-        flex-direction: column;
-        gap: 10px;
-      }
-      .card {
-        background-color: var(--vscode-sideBar-background);
-        border-radius: 5px;
-        padding: 8px 10px;
-        border: 1px solid var(--vscode-editorWidget-border);
-      }
-      .card h3 {
-        margin-bottom: 8px;
-        font-size: 0.95em;
-        font-weight: 600;
-      }
-      .form-grid {
-        display: grid;
-        grid-template-columns: repeat(auto-fit, minmax(160px, 1fr));
-        gap: 8px 12px;
-        align-items: center;
-      }
-      .field {
-        display: flex;
-        flex-direction: column;
-      }
-      .field label {
-        font-size: 0.75em;
-        margin-bottom: 2px;
-      }
-      .field input {
-        padding: 4px 6px;
-        font-size: 0.8em;
-        background-color: var(--vscode-input-background);
-        color: var(--vscode-input-foreground);
-        border: 1px solid var(--vscode-input-border);
-        border-radius: 3px;
-      }
-      .field input::placeholder {
-        color: var(--vscode-input-placeholderForeground);
-      }
-      button {
-        margin-top: 8px;
-        padding: 6px 10px;
-        font-size: 0.85em;
-        background-color: var(--vscode-button-background);
-        color: var(--vscode-button-foreground);
-        border: none;
-        border-radius: 3px;
-        cursor: pointer;
-      }
-      button:hover {
-        background-color: var(--vscode-button-hoverBackground);
-      }
-    </style>
-  </head>
-  <body>
-    <div class="scroll-pane">
-      <!-- Block 1: Single Line Feature -->
-      <div class="card">
-        <h3>Single Line Feature</h3>
-        <div class="form-grid">
-          <div class="field">
-            <label for="feature">Feature Name</label>
-            <input id="feature" placeholder="e.g. f1" />
-          </div>
-          <div class="field">
-            <label for="vendor">Vendor</label>
-            <input id="vendor" placeholder="e.g. vendor1" />
-          </div>
-          <div class="field">
-            <label for="version">Version</label>
-            <input id="version" placeholder="e.g. 1.0" />
-          </div>
-          <div class="field">
-            <label for="expiry">Expiry</label>
-            <input id="expiry" type="date" />
-          </div>
-        </div>
-        <button onclick="sendSingle()">Insert</button>
+    return `<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <style>
+    :root { color-scheme: light dark; }
+    * { margin: 0; padding: 0; box-sizing: border-box; font-family: var(--vscode-font-family, sans-serif); }
+    body { padding: 6px; background-color: var(--vscode-editor-background); color: var(--vscode-editor-foreground); font-size: 11.5px; }
+    .scroll-pane { max-height: 90vh; overflow-y: auto; display: flex; flex-direction: column; gap: 8px; }
+    .card { background-color: var(--vscode-sideBar-background); border-radius: 4px; padding: 6px 8px; border: 1px solid var(--vscode-editorWidget-border); }
+    .card h3 { margin-bottom: 6px; font-size: 0.9em; font-weight: 600; }
+    .form-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(140px, 1fr)); gap: 6px 10px; align-items: center; }
+    .field { display: flex; flex-direction: column; }
+    .field label { font-size: 0.7em; margin-bottom: 1px; }
+    .field input, .field textarea, .field select {
+      padding: 3px 5px;
+      font-size: 0.75em;
+      background-color: var(--vscode-input-background);
+      color: var(--vscode-input-foreground);
+      border: 1px solid var(--vscode-input-border);
+      border-radius: 2px;
+    }
+    button {
+      margin-top: 6px;
+      padding: 5px 9px;
+      font-size: 0.8em;
+      background-color: var(--vscode-button-background);
+      color: var(--vscode-button-foreground);
+      border: none;
+      border-radius: 2px;
+      cursor: pointer;
+    }
+    button:hover { background-color: var(--vscode-button-hoverBackground); }
+  </style>
+</head>
+<body>
+  <div class="scroll-pane">
+    <div class="card">
+      <h3>Single Feature Line</h3>
+      <div class="form-grid">
+        <div class="field"><label>Feature Name</label><input id="feature" /></div>
+        <div class="field"><label>Vendor</label><input id="vendor" /></div>
+        <div class="field"><label>Version</label><input id="version" /></div>
+        <div class="field"><label>Expiry</label><input id="expiry" type="date" /></div>
+        <div class="field"><label>License Count</label><input id="num_lic" /></div>
+        <div class="field"><label>Host ID</label><input id="hostid" /></div>
+        <div class="field"><label>Dup Group</label><select id="dup_group">
+          <option value="">None</option>
+          <option value="UH">UH</option>
+          <option value="UHD">UHD</option>
+          <option value="HOST">HOST</option>
+        </select></div>
+        <div class="field"><label>Issued</label><input id="issued" type="date" /></div>
+        <div class="field"><label>Start Date</label><input id="start" type="date" /></div>
+        <div class="field"><label>User Info</label><input id="user_info" /></div>
+        <div class="field" style="grid-column: span 2"><label>Signature</label><textarea id="sign" rows="2"></textarea></div>
       </div>
-
-      <!-- Block 2: Batch Feature Entry -->
-      <div class="card">
-        <h3>Batch Feature Entry</h3>
-        <div class="form-grid">
-          <div class="field">
-            <label for="batchFeature">Base Name</label>
-            <input id="batchFeature" placeholder="e.g. f1" />
-          </div>
-          <div class="field">
-            <label for="batchCount">Count</label>
-            <input id="batchCount" type="number" min="1" />
-          </div>
-          <div class="field">
-            <label for="batchVendor">Vendor</label>
-            <input id="batchVendor" />
-          </div>
-          <div class="field">
-            <label for="batchVersion">Version</label>
-            <input id="batchVersion" />
-          </div>
-          <div class="field">
-            <label for="batchExpiry">Expiry</label>
-            <input id="batchExpiry" type="date" />
-          </div>
-        </div>
-        <button onclick="sendBatch()">Insert Batch</button>
-      </div>
+      <button onclick="sendSingle()">Insert</button>
     </div>
 
-    <script>
-      const vscode = acquireVsCodeApi();
+    <div class="card">
+      <h3>Batch Feature Entry</h3>
+      <div class="form-grid">
+        <div class="field"><label>Base Feature Name</label><input id="batchFeature" /></div>
+        <div class="field"><label>Count</label><input id="batchCount" type="number" min="1" /></div>
+        <div class="field"><label>Vendor</label><input id="batchVendor" /></div>
+        <div class="field"><label>Version</label><input id="batchVersion" /></div>
+        <div class="field"><label>Expiry</label><input id="batchExpiry" type="date" /></div>
+        <div class="field"><label>License Count</label><input id="batchNumLic" /></div>
+        <div class="field"><label>Host ID</label><input id="batchHostid" /></div>
+        <div class="field"><label>User Info</label><input id="batchUserInfo" /></div>
+        <div class="field" style="grid-column: span 2"><label>Signature</label><textarea id="batchSign" rows="2"></textarea></div>
+      </div>
+      <button onclick="sendBatch()">Insert Batch</button>
+    </div>
+  </div>
+  <script>
+    const vscode = acquireVsCodeApi();
+    
+    function getField(id) {
+      return (document.getElementById(id)?.value || '').trim();
+    }
 
-      function sendSingle() {
-        const feature = document.getElementById("feature").value;
-        const vendor = document.getElementById("vendor").value;
-        const version = document.getElementById("version").value;
-        const expiry = document.getElementById("expiry").value;
+    function generateLine(prefix) {
+      const feature = getField(prefix + 'Feature') || getField('feature');
+      const vendor = getField(prefix + 'Vendor') || getField('vendor');
+      const version = getField(prefix + 'Version') || getField('version');
+      const expiry = getField(prefix + 'Expiry') || getField('expiry') || 'permanent';
+      const numLic = getField(prefix + 'NumLic') || getField('num_lic') || 'uncounted';
+      const hostid = getField(prefix + 'Hostid') || getField('hostid');
+      const dupGroup = getField(prefix + 'DupGroup') || getField('dup_group');
+      const issued = getField(prefix + 'Issued') || getField('issued');
+      const start = getField(prefix + 'Start') || getField('start');
+      const userInfo = getField(prefix + 'UserInfo') || getField('user_info');
+      const sign = getField(prefix + 'Sign') || getField('sign');
 
-        const content = \`FEATURE \${feature} \${vendor} \${version} \${expiry} uncounted HOSTID=ANY\\n\`;
-        vscode.postMessage({ command: 'insert', content });
+      const parts = [
+        feature, vendor, version, expiry, numLic,
+        hostid ? 'HOSTID=' + hostid : '',
+        dupGroup ? 'DUP_GROUP=' + dupGroup : '',
+        issued ? 'ISSUED=' + issued : '',
+        start ? 'START=' + start : '',
+        userInfo ? 'user_info=\"' + userInfo + '\"' : '',
+        sign ? 'SIGN=\"' + sign + '\"' : ''
+      ].filter(Boolean);
+
+      return 'FEATURE ' + parts.join(' ') + '\\n';
+    }
+
+    function sendSingle() {
+      const content = generateLine('');
+      console.log('Sending single line:', content);
+      vscode.postMessage({ command: 'insert', content });
+    }
+    function sendBatch() {
+      const base = getField('batchFeature');
+      const count = parseInt(getField('batchCount'));
+      if (!base || isNaN(count) || count <= 0) {
+        alert('Invalid base name or count.');
+        return;
       }
-
-      function sendBatch() {
-        const base = document.getElementById("batchFeature").value;
-        const count = parseInt(document.getElementById("batchCount").value);
-        const vendor = document.getElementById("batchVendor").value;
-        const version = document.getElementById("batchVersion").value;
-        const expiry = document.getElementById("batchExpiry").value;
-
-        if (!base || isNaN(count) || count <= 0) {
-          alert("Please provide a valid base name and count.");
-          return;
-        }
-
-        let content = "";
-        for (let i = 1; i <= count; i++) {
-          content += \`FEATURE \${base}_\${i} \${vendor} \${version} \${expiry} uncounted HOSTID=ANY\\n\`;
-        }
-
-        vscode.postMessage({ command: 'insert', content });
+      let content = '';
+      for (let i = 1; i <= count; i++) {
+        document.getElementById('feature').value = base + '_' + i;
+        content += generateLine('batch');
       }
-    </script>
-  </body>
-  </html>
-  `;
+      console.log('Sending batch lines:', content);
+      vscode.postMessage({ command: 'insert', content });
+    }
+  </script>
+</body>
+</html>`;
 }
 function deactivate() {
     console.log('[DEACTIVATE] FNP VCArsenal deactivated');
