@@ -1,28 +1,53 @@
 "use strict";
+var __awaiter = (this && this.__awaiter) || function (thisArg, _arguments, P, generator) {
+    function adopt(value) { return value instanceof P ? value : new P(function (resolve) { resolve(value); }); }
+    return new (P || (P = Promise))(function (resolve, reject) {
+        function fulfilled(value) { try { step(generator.next(value)); } catch (e) { reject(e); } }
+        function rejected(value) { try { step(generator["throw"](value)); } catch (e) { reject(e); } }
+        function step(result) { result.done ? resolve(result.value) : adopt(result.value).then(fulfilled, rejected); }
+        step((generator = generator.apply(thisArg, _arguments || [])).next());
+    });
+};
 Object.defineProperty(exports, "__esModule", { value: true });
 exports.deactivate = exports.activate = void 0;
 const vscode = require("vscode");
 const path = require("path");
+// Variables to track the last active text editor and cursor position
+let lastActiveEditor = vscode.window.activeTextEditor;
+let lastCursorPosition = lastActiveEditor === null || lastActiveEditor === void 0 ? void 0 : lastActiveEditor.selection.active;
 function activate(context) {
-    // Register command to open the Webview panel
+    console.log('[ACTIVATE] FNP VCArsenal activated');
+    // Register the command to open the webview panel
     context.subscriptions.push(vscode.commands.registerCommand('extension.openPanel', () => {
         const panel = vscode.window.createWebviewPanel('licenseEditor', 'FNP License Editor', vscode.ViewColumn.One, { enableScripts: true });
         panel.webview.html = getWebviewContent();
-        // Handle messages from the Webview
-        panel.webview.onDidReceiveMessage((msg) => {
-            const editor = vscode.window.activeTextEditor;
-            if (!editor) {
-                vscode.window.showErrorMessage("No active editor to insert into.");
-                return;
-            }
-            if (msg.command === 'insert') {
-                editor.edit((editBuilder) => {
-                    editBuilder.insert(editor.selection.active, msg.content);
-                });
+        // Event listener for when the webview gains focus
+        panel.onDidChangeViewState((e) => {
+            if (e.webviewPanel.active) {
+                // Store the reference to the active text editor when the webview gains focus
+                lastActiveEditor = vscode.window.activeTextEditor;
+                lastCursorPosition = lastActiveEditor === null || lastActiveEditor === void 0 ? void 0 : lastActiveEditor.selection.active;
+                console.log('[INFO] Webview focused. Stored active editor and cursor position.');
             }
         });
+        // Handle messages from the webview
+        panel.webview.onDidReceiveMessage((msg) => __awaiter(this, void 0, void 0, function* () {
+            if (msg.command === 'insert') {
+                // Ensure the last active editor and cursor position are valid
+                if (lastActiveEditor && lastCursorPosition) {
+                    lastActiveEditor.edit((editBuilder) => {
+                        editBuilder.insert(lastCursorPosition, msg.content);
+                    });
+                    console.log('[INFO] Content inserted at the last known cursor position.');
+                }
+                else {
+                    vscode.window.showErrorMessage('No active editor or cursor position available.');
+                    console.error('[ERROR] No active editor or cursor position available.');
+                }
+            }
+        }));
     }));
-    // Register the tree view under FNP VCArsenal
+    // Register tree view item in FNP VCArsenal sidebar
     vscode.window.registerTreeDataProvider('licenseEditorView', new LicenseViewLauncher(context));
 }
 exports.activate = activate;
@@ -36,50 +61,190 @@ class LicenseViewLauncher {
             command: 'extension.openPanel',
             title: 'Open License Editor Panel'
         };
-        const iconPath = this.getIconPath();
         item.iconPath = {
-            light: iconPath,
-            dark: iconPath
+            light: vscode.Uri.file(path.join(this.context.extensionPath, 'media', 'fnpcode_logo.png')),
+            dark: vscode.Uri.file(path.join(this.context.extensionPath, 'media', 'fnpcode_logo.png'))
         };
         return item;
     }
     getChildren() {
         return [this.getTreeItem()];
     }
-    getIconPath() {
-        return vscode.Uri.file(path.join(this.context.extensionPath, 'media', 'fnpcode_logo.png'));
-    }
 }
 function getWebviewContent() {
     return `
-    <!DOCTYPE html>
-    <html lang="en">
-    <body>
-      <h2>License Feature Generator</h2>
-      <label>Feature: <input id="feature" /></label><br/>
-      <label>Vendor: <input id="vendor" /></label><br/>
-      <label>Version: <input id="version" /></label><br/>
-      <label>Expiry: <input id="expiry" type="date" /></label><br/>
-      <button onclick="send()">Insert</button>
+  <!DOCTYPE html>
+  <html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <style>
+      :root {
+        color-scheme: light dark;
+      }
+      * {
+        margin: 0;
+        padding: 0;
+        box-sizing: border-box;
+        font-family: var(--vscode-font-family, sans-serif);
+      }
+      body {
+        padding: 8px;
+        background-color: var(--vscode-editor-background);
+        color: var(--vscode-editor-foreground);
+        font-size: 12px;
+      }
+      .scroll-pane {
+        max-height: 90vh;
+        overflow-y: auto;
+        display: flex;
+        flex-direction: column;
+        gap: 10px;
+      }
+      .card {
+        background-color: var(--vscode-sideBar-background);
+        border-radius: 5px;
+        padding: 8px 10px;
+        border: 1px solid var(--vscode-editorWidget-border);
+      }
+      .card h3 {
+        margin-bottom: 8px;
+        font-size: 0.95em;
+        font-weight: 600;
+      }
+      .form-grid {
+        display: grid;
+        grid-template-columns: repeat(auto-fit, minmax(160px, 1fr));
+        gap: 8px 12px;
+        align-items: center;
+      }
+      .field {
+        display: flex;
+        flex-direction: column;
+      }
+      .field label {
+        font-size: 0.75em;
+        margin-bottom: 2px;
+      }
+      .field input {
+        padding: 4px 6px;
+        font-size: 0.8em;
+        background-color: var(--vscode-input-background);
+        color: var(--vscode-input-foreground);
+        border: 1px solid var(--vscode-input-border);
+        border-radius: 3px;
+      }
+      .field input::placeholder {
+        color: var(--vscode-input-placeholderForeground);
+      }
+      button {
+        margin-top: 8px;
+        padding: 6px 10px;
+        font-size: 0.85em;
+        background-color: var(--vscode-button-background);
+        color: var(--vscode-button-foreground);
+        border: none;
+        border-radius: 3px;
+        cursor: pointer;
+      }
+      button:hover {
+        background-color: var(--vscode-button-hoverBackground);
+      }
+    </style>
+  </head>
+  <body>
+    <div class="scroll-pane">
+      <!-- Block 1: Single Line Feature -->
+      <div class="card">
+        <h3>Single Line Feature</h3>
+        <div class="form-grid">
+          <div class="field">
+            <label for="feature">Feature Name</label>
+            <input id="feature" placeholder="e.g. f1" />
+          </div>
+          <div class="field">
+            <label for="vendor">Vendor</label>
+            <input id="vendor" placeholder="e.g. vendor1" />
+          </div>
+          <div class="field">
+            <label for="version">Version</label>
+            <input id="version" placeholder="e.g. 1.0" />
+          </div>
+          <div class="field">
+            <label for="expiry">Expiry</label>
+            <input id="expiry" type="date" />
+          </div>
+        </div>
+        <button onclick="sendSingle()">Insert</button>
+      </div>
 
-      <script>
-        const vscode = acquireVsCodeApi();
-        function send() {
-          const f = document.getElementById("feature").value;
-          const v = document.getElementById("vendor").value;
-          const ver = document.getElementById("version").value;
-          const exp = document.getElementById("expiry").value;
+      <!-- Block 2: Batch Feature Entry -->
+      <div class="card">
+        <h3>Batch Feature Entry</h3>
+        <div class="form-grid">
+          <div class="field">
+            <label for="batchFeature">Base Name</label>
+            <input id="batchFeature" placeholder="e.g. f1" />
+          </div>
+          <div class="field">
+            <label for="batchCount">Count</label>
+            <input id="batchCount" type="number" min="1" />
+          </div>
+          <div class="field">
+            <label for="batchVendor">Vendor</label>
+            <input id="batchVendor" />
+          </div>
+          <div class="field">
+            <label for="batchVersion">Version</label>
+            <input id="batchVersion" />
+          </div>
+          <div class="field">
+            <label for="batchExpiry">Expiry</label>
+            <input id="batchExpiry" type="date" />
+          </div>
+        </div>
+        <button onclick="sendBatch()">Insert Batch</button>
+      </div>
+    </div>
 
-          vscode.postMessage({
-            command: 'insert',
-            content: \`FEATURE \${f} \${v} \${ver} \${exp} uncounted HOSTID=ANY\\n\`
-          });
+    <script>
+      const vscode = acquireVsCodeApi();
+
+      function sendSingle() {
+        const feature = document.getElementById("feature").value;
+        const vendor = document.getElementById("vendor").value;
+        const version = document.getElementById("version").value;
+        const expiry = document.getElementById("expiry").value;
+
+        const content = \`FEATURE \${feature} \${vendor} \${version} \${expiry} uncounted HOSTID=ANY\\n\`;
+        vscode.postMessage({ command: 'insert', content });
+      }
+
+      function sendBatch() {
+        const base = document.getElementById("batchFeature").value;
+        const count = parseInt(document.getElementById("batchCount").value);
+        const vendor = document.getElementById("batchVendor").value;
+        const version = document.getElementById("batchVersion").value;
+        const expiry = document.getElementById("batchExpiry").value;
+
+        if (!base || isNaN(count) || count <= 0) {
+          alert("Please provide a valid base name and count.");
+          return;
         }
-      </script>
-    </body>
-    </html>
+
+        let content = "";
+        for (let i = 1; i <= count; i++) {
+          content += \`FEATURE \${base}_\${i} \${vendor} \${version} \${expiry} uncounted HOSTID=ANY\\n\`;
+        }
+
+        vscode.postMessage({ command: 'insert', content });
+      }
+    </script>
+  </body>
+  </html>
   `;
 }
-function deactivate() { }
+function deactivate() {
+    console.log('[DEACTIVATE] FNP VCArsenal deactivated');
+}
 exports.deactivate = deactivate;
 //# sourceMappingURL=extension.js.map

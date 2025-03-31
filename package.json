@@ -11,7 +11,12 @@
     "Other"
   ],
   "activationEvents": [
-    "onCommand:extension.openPanel"
+    "onCommand:extension.openPanel",
+    "onStartupFinished",
+    "onDidChangeActiveTextEditor",
+    "onDidChangeTextEditorSelection",
+    "workspaceContains:**/*.lic",
+    "*"
   ],
   "main": "./out/extension.js",
   "contributes": {
